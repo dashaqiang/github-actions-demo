@@ -51,7 +51,7 @@ jobs:
             chmod -R 755 /www/wwwroot/lumao.local.com
             
             # 清理临时文件
-            rm -rf /tmp/vue-dist-${{ github.run_id }}
+            # rm -rf /tmp/vue-dist-${{ github.run_id }}
             
             # 重载Nginx
             nginx -t && nginx -s reload
