@@ -44,14 +44,14 @@ jobs:
             mkdir -p /www/wwwroot/lumao.local.com
             
             # 关键修改：同步临时目录内容到目标目录（不带 dist 层级）
-            rsync -a --delete /tmp/vue-dist-${{ github.run_id }}/ /www/wwwroot/lumao.local.com/
+            rsync -a --delete /tmp/vue-dist-${{ github.run_id }}/dist/ /www/wwwroot/lumao.local.com/
             
             # 设置权限
             chown -R www:www /www/wwwroot/lumao.local.com
             chmod -R 755 /www/wwwroot/lumao.local.com
             
             # 清理临时文件
-            # rm -rf /tmp/vue-dist-${{ github.run_id }}
+            rm -rf /tmp/vue-dist-${{ github.run_id }}
             
             # 重载Nginx
             nginx -t && nginx -s reload
