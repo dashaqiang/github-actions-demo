@@ -22,17 +22,17 @@ jobs:
       - name: Build Vue project
         run: npm run build
        # 使用 SCP 传输文件
-      - name:  Upload dist to ECS server
+      - name: Upload dist contents to ECS server
         uses: appleboy/scp-action@v1
         with:
-          host: ${{ secrets.ALIYUN_HOST  }}
-          username: ${{ secrets.ALIYUN_USERNAME  }}
+          host: ${{ secrets.ALIYUN_HOST }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
           key: ${{ secrets.ALIYUN_SSH_KEY }}
           port: ${{ secrets.ALIYUN_SSH_PORT || 22 }}
-          source: "dist/*"  # GitHub Actions 中的构建产物
+          source: "dist/*"  # 只上传 dist 目录下的内容
           target: "/tmp/vue-dist-${{ github.run_id }}/"  # 使用唯一临时目录
       # ssh 登录ECS server 执行远程命令清理和重载   
-      - name: SSH Deploy on ECS server Clean and Reload Nginx
+      - name: Deploy and Reload Nginx
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.ALIYUN_HOST }}
@@ -40,8 +40,10 @@ jobs:
           key: ${{ secrets.ALIYUN_SSH_KEY }}
           port: ${{ secrets.ALIYUN_SSH_PORT || 22 }}
           script: |
+            # 确保目标目录存在
+            mkdir -p /www/wwwroot/lumao.local.com
             
-            # 原子替换：先清空目标目录再移动文件
+            # 关键修改：同步临时目录内容到目标目录（不带 dist 层级）
             rsync -a --delete /tmp/vue-dist-${{ github.run_id }}/ /www/wwwroot/lumao.local.com/
             
             # 设置权限
