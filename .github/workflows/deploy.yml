@@ -1,55 +1,55 @@
-# name: Deploy Vue to Aliyun ECS
+name: Deploy Vue to Aliyun ECS
 
-# on:
-#   push:
-#     branches: [ main ]
+on:
+  push:
+    branches: [ main ]
 
-# jobs:
-#   build-and-deploy:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Install Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: 18
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-#       - name: Install dependencies
-#         run: npm install
+      - name: Install dependencies
+        run: npm install
 
-#       - name: Build Vue project
-#         run: npm run build
-#        # 使用 SCP 传输文件
-#       - name:  Upload dist to ECS server
-#         uses: appleboy/scp-action@v1
-#         with:
-#           host: ${{ secrets.ALIYUN_HOST  }}
-#           username: ${{ secrets.ALIYUN_USERNAME  }}
-#           key: ${{ secrets.ALIYUN_SSH_KEY }}
-#           port: ${{ secrets.ALIYUN_SSH_PORT || 22 }}
-#           source: "dist/*"  # GitHub Actions 中的构建产物
-#           target: "/tmp/vue-dist-${{ github.run_id }}/"  # 使用唯一临时目录
-#       # ssh 登录ECS server 执行远程命令清理和重载   
-#       - name: SSH Deploy on ECS server Clean and Reload Nginx
-#         uses: appleboy/ssh-action@v1
-#         with:
-#           host: ${{ secrets.ALIYUN_HOST }}
-#           username: ${{ secrets.ALIYUN_USERNAME }}
-#           key: ${{ secrets.ALIYUN_SSH_KEY }}
-#           port: ${{ secrets.ALIYUN_SSH_PORT || 22 }}
-#           script: |
+      - name: Build Vue project
+        run: npm run build
+       # 使用 SCP 传输文件
+      - name:  Upload dist to ECS server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.ALIYUN_HOST  }}
+          username: ${{ secrets.ALIYUN_USERNAME  }}
+          key: ${{ secrets.ALIYUN_SSH_KEY }}
+          port: ${{ secrets.ALIYUN_SSH_PORT || 22 }}
+          source: "dist/*"  # GitHub Actions 中的构建产物
+          target: "/tmp/vue-dist-${{ github.run_id }}/"  # 使用唯一临时目录
+      # ssh 登录ECS server 执行远程命令清理和重载   
+      - name: SSH Deploy on ECS server Clean and Reload Nginx
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.ALIYUN_HOST }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          key: ${{ secrets.ALIYUN_SSH_KEY }}
+          port: ${{ secrets.ALIYUN_SSH_PORT || 22 }}
+          script: |
             
-#             # 原子替换：先清空目标目录再移动文件
-#             rsync -a --delete /tmp/vue-dist-${{ github.run_id }}/ /www/wwwroot/lumao.local.com/
+            # 原子替换：先清空目标目录再移动文件
+            rsync -a --delete /tmp/vue-dist-${{ github.run_id }}/ /www/wwwroot/lumao.local.com/
             
-#             # 设置权限
-#             chown -R www:www /www/wwwroot/lumao.local.com
-#             chmod -R 755 /www/wwwroot/lumao.local.com
+            # 设置权限
+            chown -R www:www /www/wwwroot/lumao.local.com
+            chmod -R 755 /www/wwwroot/lumao.local.com
             
-#             # 清理临时文件
-#             rm -rf /tmp/vue-dist-${{ github.run_id }}
+            # 清理临时文件
+            rm -rf /tmp/vue-dist-${{ github.run_id }}
             
-#             # 重载Nginx
-#             nginx -t && nginx -s reload
+            # 重载Nginx
+            nginx -t && nginx -s reload

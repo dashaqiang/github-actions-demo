@@ -1,11 +1,57 @@
-- name: Test SSH Connection
-  uses: appleboy/ssh-action@v1
-  with:
-    host: ${{ secrets.ALIYUN_HOST }}
-    username: ${{ secrets.ALIYUN_USERNAME }}
-    key: ${{ secrets.ALIYUN_SSH_KEY }}
-    port: ${{ secrets.ALIYUN_SSH_PORT || 22 }}
-    script: |
-      echo "连接成功！"
-      whoami
-      pwd
+name: Test SSH Connection
+
+on:
+  workflow_dispatch:  # 允许手动触发
+  push:
+    branches: [ test/action ] # 可配置为在推送到 main 分支时自动测试
+
+jobs:
+  ssh-connection-test:
+    name: Test SSH to Aliyun
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check SSH connection
+        uses: appleboy/ssh-action@v1.0.0  # 使用最新的 v1 版本
+        with:
+          host: ${{ secrets.ALIYUN_HOST }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          key: ${{ secrets.ALIYUN_SSH_KEY }}
+          port: ${{ secrets.ALIYUN_SSH_PORT || 22 }}
+          script: |
+            echo "========================================"
+            echo "✅ SSH连接成功！"
+            echo "========================================"
+            echo "服务器信息:"
+            echo "主机名: $(hostname)"
+            echo "IP地址: $(hostname -I)"
+            echo "操作系统: $(cat /etc/os-release | grep PRETTY_NAME | cut -d\" -f2)"
+            echo "内核版本: $(uname -r)"
+            echo "当前用户: $(whoami)"
+            echo "当前目录: $(pwd)"
+            echo ""
+            echo "========================================"
+            echo "🔄 系统状态检查:"
+            echo "运行时间: $(uptime -p)"
+            echo "内存使用: $(free -m | awk 'NR==2{printf "%.2f%%", $3*100/$2}')"
+            echo "磁盘使用: $(df -h / | awk 'NR==2{print $5}')"
+            echo ""
+            echo "========================================"
+            echo "🔍 关键服务状态:"
+            systemctl status nginx --no-pager || true
+            echo ""
+            systemctl status ssh --no-pager || true
+            echo ""
+            echo "========================================"
+            echo "📁 项目目录检查:"
+            echo "网站目录: /www/wwwroot/${{ secrets.ALIYUN_DOMAIN || 'your-domain' }}"
+            ls -la /www/wwwroot/${{ secrets.ALIYUN_DOMAIN || 'your-domain' }} || true
+            echo ""
+            echo "========================================"
+            echo "🌐 网络连通性测试:"
+            ping -c 2 github.com
+            echo ""
+            echo "✅ 所有测试完成！"
+          envs: 
+            TZ: Asia/Shanghai  # 设置时区
+          timeout: 30s  # 超时设置
