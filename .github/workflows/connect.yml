@@ -1,0 +1,11 @@
+- name: Test SSH Connection
+  uses: appleboy/ssh-action@v1
+  with:
+    host: ${{ secrets.ALIYUN_HOST }}
+    username: ${{ secrets.ALIYUN_USERNAME }}
+    key: ${{ secrets.ALIYUN_SSH_KEY }}
+    port: ${{ secrets.ALIYUN_SSH_PORT || 22 }}
+    script: |
+      echo "连接成功！"
+      whoami
+      pwd
