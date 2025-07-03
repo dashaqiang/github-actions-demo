@@ -52,6 +52,4 @@ jobs:
             ping -c 2 github.com
             echo ""
             echo "✅ 所有测试完成！"
-          envs: 
-            TZ: Asia/Shanghai  # 设置时区
           timeout: 30s  # 超时设置
